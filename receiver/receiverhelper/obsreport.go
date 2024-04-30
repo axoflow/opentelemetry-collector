@@ -85,7 +85,7 @@ func (rec *ObsReport) EndTracesOp(
 	numReceivedSpans int,
 	err error,
 ) {
-	rec.endOp(receiverCtx, format, numReceivedSpans, err, component.DataTypeTraces)
+	rec.endOp(receiverCtx, format, numReceivedSpans, 0, err, component.DataTypeTraces)
 }
 
 // StartLogsOp is called when a request is received from a client.
@@ -101,9 +101,10 @@ func (rec *ObsReport) EndLogsOp(
 	receiverCtx context.Context,
 	format string,
 	numReceivedLogRecords int,
+	bytesReceivedLogRecords int,
 	err error,
 ) {
-	rec.endOp(receiverCtx, format, numReceivedLogRecords, err, component.DataTypeLogs)
+	rec.endOp(receiverCtx, format, numReceivedLogRecords, bytesReceivedLogRecords, err, component.DataTypeLogs)
 }
 
 // StartMetricsOp is called when a request is received from a client.
@@ -121,7 +122,7 @@ func (rec *ObsReport) EndMetricsOp(
 	numReceivedPoints int,
 	err error,
 ) {
-	rec.endOp(receiverCtx, format, numReceivedPoints, err, component.DataTypeMetrics)
+	rec.endOp(receiverCtx, format, numReceivedPoints, 0, err, component.DataTypeMetrics)
 }
 
 // startOp creates the span used to trace the operation. Returning
@@ -154,6 +155,7 @@ func (rec *ObsReport) endOp(
 	receiverCtx context.Context,
 	format string,
 	numReceivedItems int,
+	bytesReceivedItems int,
 	err error,
 	dataType component.DataType,
 ) {
@@ -167,27 +169,32 @@ func (rec *ObsReport) endOp(
 	span := trace.SpanFromContext(receiverCtx)
 
 	if rec.level != configtelemetry.LevelNone {
-		rec.recordMetrics(receiverCtx, dataType, numAccepted, numRefused)
+		rec.recordMetrics(receiverCtx, dataType, numAccepted, bytesReceivedItems, numRefused)
 	}
 
 	// end span according to errors
 	if span.IsRecording() {
-		var acceptedItemsKey, refusedItemsKey string
+		var acceptedItemsKey, acceptedItemsInBytesKey, refusedItemsKey string
+
 		switch dataType {
 		case component.DataTypeTraces:
 			acceptedItemsKey = obsmetrics.AcceptedSpansKey
+			acceptedItemsInBytesKey = obsmetrics.AcceptedSpansBytesKey
 			refusedItemsKey = obsmetrics.RefusedSpansKey
 		case component.DataTypeMetrics:
 			acceptedItemsKey = obsmetrics.AcceptedMetricPointsKey
+			acceptedItemsInBytesKey = obsmetrics.AcceptedMetricPointsBytesKey
 			refusedItemsKey = obsmetrics.RefusedMetricPointsKey
 		case component.DataTypeLogs:
 			acceptedItemsKey = obsmetrics.AcceptedLogRecordsKey
+			acceptedItemsInBytesKey = obsmetrics.AcceptedLogRecordsBytesKey
 			refusedItemsKey = obsmetrics.RefusedLogRecordsKey
 		}
 
 		span.SetAttributes(
 			attribute.String(obsmetrics.FormatKey, format),
 			attribute.Int64(acceptedItemsKey, int64(numAccepted)),
+			attribute.Int64(acceptedItemsInBytesKey, int64(bytesReceivedItems)),
 			attribute.Int64(refusedItemsKey, int64(numRefused)),
 		)
 		if err != nil {
@@ -197,20 +204,25 @@ func (rec *ObsReport) endOp(
 	span.End()
 }
 
-func (rec *ObsReport) recordMetrics(receiverCtx context.Context, dataType component.DataType, numAccepted, numRefused int) {
-	var acceptedMeasure, refusedMeasure metric.Int64Counter
+func (rec *ObsReport) recordMetrics(receiverCtx context.Context, dataType component.DataType, numAccepted, bytesAccepted, numRefused int) {
+	var acceptedMeasure, acceptedBytesMeasure, refusedMeasure metric.Int64Counter
 	switch dataType {
 	case component.DataTypeTraces:
 		acceptedMeasure = rec.telemetryBuilder.ReceiverAcceptedSpans
+		acceptedBytesMeasure = rec.telemetryBuilder.ReceiverAcceptedSpansBytes
 		refusedMeasure = rec.telemetryBuilder.ReceiverRefusedSpans
 	case component.DataTypeMetrics:
 		acceptedMeasure = rec.telemetryBuilder.ReceiverAcceptedMetricPoints
+		acceptedBytesMeasure = rec.telemetryBuilder.ReceiverAcceptedMetricPointsBytes
 		refusedMeasure = rec.telemetryBuilder.ReceiverRefusedMetricPoints
 	case component.DataTypeLogs:
 		acceptedMeasure = rec.telemetryBuilder.ReceiverAcceptedLogRecords
+		acceptedBytesMeasure = rec.telemetryBuilder.ReceiverAcceptedLogRecordsBytes
 		refusedMeasure = rec.telemetryBuilder.ReceiverRefusedLogRecords
 	}
 
 	acceptedMeasure.Add(receiverCtx, int64(numAccepted), metric.WithAttributes(rec.otelAttrs...))
 	refusedMeasure.Add(receiverCtx, int64(numRefused), metric.WithAttributes(rec.otelAttrs...))
+	acceptedBytesMeasure.Add(receiverCtx, int64(bytesAccepted), metric.WithAttributes(rec.otelAttrs...))
+
 }
