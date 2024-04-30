@@ -24,12 +24,14 @@ var metricsUnmarshaler = &pmetric.ProtoUnmarshaler{}
 type metricsRequest struct {
 	md     pmetric.Metrics
 	pusher consumer.ConsumeMetricsFunc
+	sizer  pmetric.Sizer
 }
 
 func newMetricsRequest(md pmetric.Metrics, pusher consumer.ConsumeMetricsFunc) Request {
 	return &metricsRequest{
 		md:     md,
 		pusher: pusher,
+		sizer:  &pmetric.ProtoMarshaler{},
 	}
 }
 
@@ -61,6 +63,10 @@ func (req *metricsRequest) Export(ctx context.Context) error {
 
 func (req *metricsRequest) ItemsCount() int {
 	return req.md.DataPointCount()
+}
+
+func (req *metricsRequest) BytesSize() int {
+	return req.sizer.MetricsSize(req.md)
 }
 
 type metricsExporter struct {
@@ -156,6 +162,6 @@ func newMetricsSenderWithObservability(obsrep *ObsReport) requestSender {
 func (mewo *metricsSenderWithObservability) send(ctx context.Context, req Request) error {
 	c := mewo.obsrep.StartMetricsOp(ctx)
 	err := mewo.nextSender.send(c, req)
-	mewo.obsrep.EndMetricsOp(c, req.ItemsCount(), err)
+	mewo.obsrep.EndMetricsOp(c, req.ItemsCount(), req.BytesSize(), err)
 	return err
 }

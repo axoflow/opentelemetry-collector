@@ -78,6 +78,14 @@ Number of log record successfully sent to destination.
 | ---- | ----------- | ---------- | --------- |
 | 1 | Sum | Int | true |
 
+### exporter_sent_log_records_bytes
+
+Bytes of log records succesfully sent to destination.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
+
 ### exporter_sent_metric_points
 
 Number of metric points successfully sent to destination.
@@ -86,6 +94,14 @@ Number of metric points successfully sent to destination.
 | ---- | ----------- | ---------- | --------- |
 | 1 | Sum | Int | true |
 
+### exporter_sent_metric_points_bytes
+
+Bytes of metric point succesfully sent to destination.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
+
 ### exporter_sent_spans
 
 Number of spans successfully sent to destination.
@@ -93,3 +109,11 @@ Number of spans successfully sent to destination.
 | Unit | Metric Type | Value Type | Monotonic |
 | ---- | ----------- | ---------- | --------- |
 | 1 | Sum | Int | true |
+
+### exporter_sent_spans_bytes
+
+Bytes of spans successfully sent to destination.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
