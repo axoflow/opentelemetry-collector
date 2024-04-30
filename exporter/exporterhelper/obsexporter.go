@@ -69,7 +69,7 @@ func (or *ObsReport) StartTracesOp(ctx context.Context) context.Context {
 // EndTracesOp completes the export operation that was started with StartTracesOp.
 func (or *ObsReport) EndTracesOp(ctx context.Context, numSpans int, err error) {
 	numSent, numFailedToSend := toNumItems(numSpans, err)
-	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeTraces, numSent, numFailedToSend)
+	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeTraces, numSent, 0, numFailedToSend)
 	endSpan(ctx, err, numSent, numFailedToSend, obsmetrics.SentSpansKey, obsmetrics.FailedToSendSpansKey)
 }
 
@@ -84,7 +84,7 @@ func (or *ObsReport) StartMetricsOp(ctx context.Context) context.Context {
 // StartMetricsOp.
 func (or *ObsReport) EndMetricsOp(ctx context.Context, numMetricPoints int, err error) {
 	numSent, numFailedToSend := toNumItems(numMetricPoints, err)
-	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeMetrics, numSent, numFailedToSend)
+	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeMetrics, numSent, 0, numFailedToSend)
 	endSpan(ctx, err, numSent, numFailedToSend, obsmetrics.SentMetricPointsKey, obsmetrics.FailedToSendMetricPointsKey)
 }
 
@@ -96,9 +96,9 @@ func (or *ObsReport) StartLogsOp(ctx context.Context) context.Context {
 }
 
 // EndLogsOp completes the export operation that was started with StartLogsOp.
-func (or *ObsReport) EndLogsOp(ctx context.Context, numLogRecords int, err error) {
+func (or *ObsReport) EndLogsOp(ctx context.Context, numLogRecords int, bytesLogRecords int, err error) {
 	numSent, numFailedToSend := toNumItems(numLogRecords, err)
-	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeLogs, numSent, numFailedToSend)
+	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeLogs, numSent, int64(bytesLogRecords), numFailedToSend)
 	endSpan(ctx, err, numSent, numFailedToSend, obsmetrics.SentLogRecordsKey, obsmetrics.FailedToSendLogRecordsKey)
 }
 
@@ -110,7 +110,7 @@ func (or *ObsReport) startOp(ctx context.Context, operationSuffix string) contex
 	return ctx
 }
 
-func (or *ObsReport) recordMetrics(ctx context.Context, dataType component.DataType, sent, failed int64) {
+func (or *ObsReport) recordMetrics(ctx context.Context, dataType component.DataType, sent, sentBytes, failed int64) {
 	if or.level == configtelemetry.LevelNone {
 		return
 	}
