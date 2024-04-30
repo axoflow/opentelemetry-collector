@@ -14,6 +14,14 @@ Number of log records successfully pushed into the pipeline.
 | ---- | ----------- | ---------- | --------- |
 | 1 | Sum | Int | true |
 
+### receiver_accepted_log_records_bytes
+
+Number of log records successfully pushed into the pipeline.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
+
 ### receiver_accepted_metric_points
 
 Number of metric points successfully pushed into the pipeline.
@@ -22,6 +30,14 @@ Number of metric points successfully pushed into the pipeline.
 | ---- | ----------- | ---------- | --------- |
 | 1 | Sum | Int | true |
 
+### receiver_accepted_metric_points_bytes
+
+Number of metric points successfully pushed into the pipeline.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
+
 ### receiver_accepted_spans
 
 Number of spans successfully pushed into the pipeline.
@@ -29,6 +45,14 @@ Number of spans successfully pushed into the pipeline.
 | Unit | Metric Type | Value Type | Monotonic |
 | ---- | ----------- | ---------- | --------- |
 | 1 | Sum | Int | true |
+
+### receiver_accepted_spans_bytes
+
+Number of spans successfully pushed into the pipeline.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
 
 ### receiver_refused_log_records
 
