@@ -23,6 +23,7 @@ var logsUnmarshaler = &plog.ProtoUnmarshaler{}
 
 type logsRequest struct {
 	ld     plog.Logs
+	sizer  plog.Sizer
 	pusher consumer.ConsumeLogsFunc
 }
 
@@ -64,7 +65,7 @@ func (req *logsRequest) ItemsCount() int {
 }
 
 func (req *logsRequest) BytesSize() int {
-	return req.ld.LogRecordBytes()
+	return req.sizer.LogsSize(req.ld)
 }
 
 type logsExporter struct {

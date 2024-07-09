@@ -67,9 +67,9 @@ func (or *ObsReport) StartTracesOp(ctx context.Context) context.Context {
 }
 
 // EndTracesOp completes the export operation that was started with StartTracesOp.
-func (or *ObsReport) EndTracesOp(ctx context.Context, numSpans int, err error) {
+func (or *ObsReport) EndTracesOp(ctx context.Context, numSpans int, bytesSpans int, err error) {
 	numSent, numFailedToSend := toNumItems(numSpans, err)
-	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeTraces, numSent, 0, numFailedToSend)
+	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeTraces, numSent, int64(bytesSpans), numFailedToSend)
 	endSpan(ctx, err, numSent, numFailedToSend, obsmetrics.SentSpansKey, obsmetrics.FailedToSendSpansKey)
 }
 
@@ -82,9 +82,9 @@ func (or *ObsReport) StartMetricsOp(ctx context.Context) context.Context {
 
 // EndMetricsOp completes the export operation that was started with
 // StartMetricsOp.
-func (or *ObsReport) EndMetricsOp(ctx context.Context, numMetricPoints int, err error) {
+func (or *ObsReport) EndMetricsOp(ctx context.Context, numMetricPoints int, bytesMetricPoints int, err error) {
 	numSent, numFailedToSend := toNumItems(numMetricPoints, err)
-	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeMetrics, numSent, 0, numFailedToSend)
+	or.recordMetrics(context.WithoutCancel(ctx), component.DataTypeMetrics, numSent, int64(bytesMetricPoints), numFailedToSend)
 	endSpan(ctx, err, numSent, numFailedToSend, obsmetrics.SentMetricPointsKey, obsmetrics.FailedToSendMetricPointsKey)
 }
 
@@ -115,20 +115,26 @@ func (or *ObsReport) recordMetrics(ctx context.Context, dataType component.DataT
 		return
 	}
 	var sentMeasure, failedMeasure metric.Int64Counter
+	var sentMeasureBytes metric.Int64Counter
+
 	switch dataType {
 	case component.DataTypeTraces:
 		sentMeasure = or.telemetryBuilder.ExporterSentSpans
 		failedMeasure = or.telemetryBuilder.ExporterSendFailedSpans
+		sentMeasureBytes = or.telemetryBuilder.ExporterSentSpansBytes
 	case component.DataTypeMetrics:
 		sentMeasure = or.telemetryBuilder.ExporterSentMetricPoints
 		failedMeasure = or.telemetryBuilder.ExporterSendFailedMetricPoints
+		sentMeasureBytes = or.telemetryBuilder.ExporterSentMetricPointsBytes
 	case component.DataTypeLogs:
 		sentMeasure = or.telemetryBuilder.ExporterSentLogRecords
 		failedMeasure = or.telemetryBuilder.ExporterSendFailedLogRecords
+		sentMeasureBytes = or.telemetryBuilder.ExporterSentLogRecordsBytes
 	}
 
 	sentMeasure.Add(ctx, sent, metric.WithAttributes(or.otelAttrs...))
 	failedMeasure.Add(ctx, failed, metric.WithAttributes(or.otelAttrs...))
+	sentMeasureBytes.Add(ctx, sentBytes, metric.WithAttributes(or.otelAttrs...))
 }
 
 func endSpan(ctx context.Context, err error, numSent, numFailedToSend int64, sentItemsKey, failedToSendItemsKey string) {

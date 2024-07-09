@@ -24,14 +24,17 @@ func Tracer(settings component.TelemetrySettings) trace.Tracer {
 // TelemetryBuilder provides an interface for components to report telemetry
 // as defined in metadata and user config.
 type TelemetryBuilder struct {
-	meter                        metric.Meter
-	ReceiverAcceptedLogRecords   metric.Int64Counter
-	ReceiverAcceptedMetricPoints metric.Int64Counter
-	ReceiverAcceptedSpans        metric.Int64Counter
-	ReceiverRefusedLogRecords    metric.Int64Counter
-	ReceiverRefusedMetricPoints  metric.Int64Counter
-	ReceiverRefusedSpans         metric.Int64Counter
-	level                        configtelemetry.Level
+	meter                             metric.Meter
+	ReceiverAcceptedLogRecords        metric.Int64Counter
+	ReceiverAcceptedLogRecordsBytes   metric.Int64Counter
+	ReceiverAcceptedMetricPoints      metric.Int64Counter
+	ReceiverAcceptedMetricPointsBytes metric.Int64Counter
+	ReceiverAcceptedSpans             metric.Int64Counter
+	ReceiverAcceptedSpansBytes        metric.Int64Counter
+	ReceiverRefusedLogRecords         metric.Int64Counter
+	ReceiverRefusedMetricPoints       metric.Int64Counter
+	ReceiverRefusedSpans              metric.Int64Counter
+	level                             configtelemetry.Level
 }
 
 // telemetryBuilderOption applies changes to default builder.
@@ -63,16 +66,34 @@ func NewTelemetryBuilder(settings component.TelemetrySettings, options ...teleme
 		metric.WithUnit("1"),
 	)
 	errs = errors.Join(errs, err)
+	builder.ReceiverAcceptedLogRecordsBytes, err = builder.meter.Int64Counter(
+		"receiver_accepted_log_records_bytes",
+		metric.WithDescription("Number of log records successfully pushed into the pipeline."),
+		metric.WithUnit("By"),
+	)
+	errs = errors.Join(errs, err)
 	builder.ReceiverAcceptedMetricPoints, err = builder.meter.Int64Counter(
 		"receiver_accepted_metric_points",
 		metric.WithDescription("Number of metric points successfully pushed into the pipeline."),
 		metric.WithUnit("1"),
 	)
 	errs = errors.Join(errs, err)
+	builder.ReceiverAcceptedMetricPointsBytes, err = builder.meter.Int64Counter(
+		"receiver_accepted_metric_points_bytes",
+		metric.WithDescription("Number of metric points successfully pushed into the pipeline."),
+		metric.WithUnit("By"),
+	)
+	errs = errors.Join(errs, err)
 	builder.ReceiverAcceptedSpans, err = builder.meter.Int64Counter(
 		"receiver_accepted_spans",
 		metric.WithDescription("Number of spans successfully pushed into the pipeline."),
 		metric.WithUnit("1"),
+	)
+	errs = errors.Join(errs, err)
+	builder.ReceiverAcceptedSpansBytes, err = builder.meter.Int64Counter(
+		"receiver_accepted_spans_bytes",
+		metric.WithDescription("Number of spans successfully pushed into the pipeline."),
+		metric.WithUnit("By"),
 	)
 	errs = errors.Join(errs, err)
 	builder.ReceiverRefusedLogRecords, err = builder.meter.Int64Counter(
