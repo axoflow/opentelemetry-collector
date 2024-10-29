@@ -78,6 +78,14 @@ Number of log record successfully sent to destination.
 | ---- | ----------- | ---------- | --------- |
 | {records} | Sum | Int | true |
 
+### otelcol_exporter_sent_log_records_bytes
+
+Bytes of log records successfully sent to destination.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
+
 ### otelcol_exporter_sent_metric_points
 
 Number of metric points successfully sent to destination.
@@ -86,6 +94,14 @@ Number of metric points successfully sent to destination.
 | ---- | ----------- | ---------- | --------- |
 | {datapoints} | Sum | Int | true |
 
+### otelcol_exporter_sent_metric_points_bytes
+
+Bytes of metric point successfully sent to destination.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
+
 ### otelcol_exporter_sent_spans
 
 Number of spans successfully sent to destination.
@@ -93,3 +109,11 @@ Number of spans successfully sent to destination.
 | Unit | Metric Type | Value Type | Monotonic |
 | ---- | ----------- | ---------- | --------- |
 | {spans} | Sum | Int | true |
+
+### otelcol_exporter_sent_spans_bytes
+
+Bytes of spans successfully sent to destination.
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| By | Sum | Int | true |
