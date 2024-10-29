@@ -39,8 +39,11 @@ type TelemetryBuilder struct {
 	ExporterSendFailedMetricPoints    metric.Int64Counter
 	ExporterSendFailedSpans           metric.Int64Counter
 	ExporterSentLogRecords            metric.Int64Counter
+	ExporterSentLogRecordsBytes       metric.Int64Counter
 	ExporterSentMetricPoints          metric.Int64Counter
+	ExporterSentMetricPointsBytes     metric.Int64Counter
 	ExporterSentSpans                 metric.Int64Counter
+	ExporterSentSpansBytes            metric.Int64Counter
 	meters                            map[configtelemetry.Level]metric.Meter
 }
 
@@ -142,16 +145,34 @@ func NewTelemetryBuilder(settings component.TelemetrySettings, options ...Teleme
 		metric.WithUnit("{records}"),
 	)
 	errs = errors.Join(errs, err)
+	builder.ExporterSentLogRecordsBytes, err = builder.meters[configtelemetry.LevelBasic].Int64Counter(
+		"otelcol_exporter_sent_log_records_bytes",
+		metric.WithDescription("Bytes of log records successfully sent to destination."),
+		metric.WithUnit("By"),
+	)
+	errs = errors.Join(errs, err)
 	builder.ExporterSentMetricPoints, err = builder.meters[configtelemetry.LevelBasic].Int64Counter(
 		"otelcol_exporter_sent_metric_points",
 		metric.WithDescription("Number of metric points successfully sent to destination."),
 		metric.WithUnit("{datapoints}"),
 	)
 	errs = errors.Join(errs, err)
+	builder.ExporterSentMetricPointsBytes, err = builder.meters[configtelemetry.LevelBasic].Int64Counter(
+		"otelcol_exporter_sent_metric_points_bytes",
+		metric.WithDescription("Bytes of metric point successfully sent to destination."),
+		metric.WithUnit("By"),
+	)
+	errs = errors.Join(errs, err)
 	builder.ExporterSentSpans, err = builder.meters[configtelemetry.LevelBasic].Int64Counter(
 		"otelcol_exporter_sent_spans",
 		metric.WithDescription("Number of spans successfully sent to destination."),
 		metric.WithUnit("{spans}"),
+	)
+	errs = errors.Join(errs, err)
+	builder.ExporterSentSpansBytes, err = builder.meters[configtelemetry.LevelBasic].Int64Counter(
+		"otelcol_exporter_sent_spans_bytes",
+		metric.WithDescription("Bytes of spans successfully sent to destination."),
+		metric.WithUnit("By"),
 	)
 	errs = errors.Join(errs, err)
 	return &builder, errs
